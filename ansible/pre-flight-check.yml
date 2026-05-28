@@ -1,0 +1,98 @@
+---
+- name: Pre-flight Check Before Deployment
+  hosts: local
+  become: false
+
+  vars:
+    image_name: "srinidhi1989/cloud-native-devops-aiops-platform"
+    image_tag: "v1.0.1"
+    app_namespace: "devops-aiops"
+
+  tasks:
+
+    - name: Check Docker is running
+      shell: docker info
+      register: docker_info
+      ignore_errors: true
+
+    - name: Verify Docker is running
+      debug:
+        msg: "Docker is running ✅"
+      when: docker_info.rc == 0
+
+    - name: Fail if Docker is not running
+      fail:
+        msg: "Docker is not running ❌ Please start Docker!"
+      when: docker_info.rc != 0
+
+    - name: Check Minikube is running
+      shell: minikube status | grep -i "host" | awk '{print $2}'
+      register: minikube_status
+      ignore_errors: true
+
+    - name: Verify Minikube is running
+      debug:
+        msg: "Minikube is running ✅"
+      when: minikube_status.stdout == "Running"
+
+    - name: Warn if Minikube is not running
+      debug:
+        msg: "Warning - Minikube is not running ⚠️"
+      when: minikube_status.stdout != "Running"
+
+    - name: Check kubectl can connect to cluster
+      shell: kubectl get nodes
+      register: kubectl_check
+      ignore_errors: true
+
+    - name: Display cluster nodes
+      debug:
+        msg: "Cluster nodes: {{ kubectl_check.stdout }}"
+
+    - name: Check namespace exists
+      shell: kubectl get namespace {{ app_namespace }}
+      register: namespace_check
+      ignore_errors: true
+
+    - name: Create namespace if not exists
+      shell: kubectl create namespace {{ app_namespace }}
+      when: namespace_check.rc != 0
+
+    - name: Namespace status
+      debug:
+        msg: "Namespace {{ app_namespace }} is ready ✅"
+      when: namespace_check.rc == 0
+
+    - name: Check Vault is accessible
+      shell: curl -s -o /dev/null -w "%{http_code}" http://localhost:8200/v1/sys/health
+      register: vault_check
+      ignore_errors: true
+
+    - name: Verify Vault is accessible
+      debug:
+        msg: "Vault is accessible ✅"
+      when: "'200' in vault_check.stdout or '429' in vault_check.stdout"
+
+    - name: Warn if Vault is not accessible
+      debug:
+        msg: "Warning - Vault is not accessible ⚠️ Please start Vault!"
+      when: "'200' not in vault_check.stdout and '429' not in vault_check.stdout"
+
+    - name: Check Docker image exists locally
+      shell: docker images --format "{% raw %}{{.Repository}}:{{.Tag}}{% endraw %}" | grep "{{ image_name }}:{{ image_tag }}"
+      register: image_check
+      ignore_errors: true
+
+    - name: Verify Docker image exists
+      debug:
+        msg: "Docker image {{ image_name }}:{{ image_tag }} found locally ✅"
+      when: image_check.rc == 0
+
+    - name: Warn if Docker image not found
+      debug:
+        msg: "Warning - Docker image not found locally ⚠️ Will pull from Docker Hub"
+      when: image_check.rc != 0
+
+    - name: All pre-flight checks complete
+      debug:
+        msg: "All pre-flight checks complete! Ready to deploy 🚀"

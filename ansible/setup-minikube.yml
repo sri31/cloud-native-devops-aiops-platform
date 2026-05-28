@@ -1,0 +1,42 @@
+---
+- name: Setup and Configure Minikube
+  hosts: local
+  become: false
+
+  tasks:
+
+    - name: Check if Minikube is installed
+      shell: minikube version
+      register: minikube_version
+      
+    - name: Display Minikube version
+      debug:
+        msg: "Minikube version: {{ minikube_version.stdout }}"
+
+    - name: Start Minikube
+      shell: minikube start --memory=6144 --cpus=4 --driver=docker
+      register: minikube_start
+      ignore_errors: true
+
+    - name: Display Minikube start output
+      debug:
+        msg: "{{ minikube_start.stdout }}"
+
+    - name: Verify Minikube is running
+      shell: minikube status
+      register: minikube_status
+
+    - name: Display Minikube status
+      debug:
+        msg: "{{ minikube_status.stdout }}"
+
+    - name: Create devops-aiops namespace
+      shell: kubectl create namespace devops-aiops --dry-run=client -o yaml | kubectl apply -f -
+      register: namespace_result
+
+    - name: Display namespace result
+      debug:
+        msg: "{{ namespace_result.stdout }}"
+
+    - name: Verify namespace exists
+      shell: kubectl get namespace devops-aiops
