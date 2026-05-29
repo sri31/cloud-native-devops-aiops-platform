@@ -1,0 +1,92 @@
+# ──────────────────────────────────────────
+# Namespace
+# ──────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: devops-aiops
+
+---
+# ──────────────────────────────────────────
+# ConfigMap
+# ──────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-native-devops-aiops-platform-config
+  namespace: devops-aiops
+data:
+  APP_NAME: "cloud-native-devops-aiops-platform"
+  ENVIRONMENT: "development"
+  APP_PORT: "8000"
+  IMAGE_TAG: "v1.0.1"
+
+---
+# ──────────────────────────────────────────
+# Deployment
+# ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-native-devops-aiops-platform
+  namespace: devops-aiops
+  labels:
+    app: cloud-native-devops-aiops-platform
+    environment: development
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloud-native-devops-aiops-platform
+  template:
+    metadata:
+      labels:
+        app: cloud-native-devops-aiops-platform
+        environment: development
+    spec:
+      containers:
+        - name: cloud-native-devops-aiops-platform
+          image: srinidhi1989/cloud-native-devops-aiops-platform:v1.0.1  # IMAGE_TAG
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: cloud-native-devops-aiops-platform-config
+
+---
+# ──────────────────────────────────────────
+# Service
+# ──────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-native-devops-aiops-platform-service
+  namespace: devops-aiops
+  labels:
+    app: cloud-native-devops-aiops-platform
+spec:
+  selector:
+    app: cloud-native-devops-aiops-platform
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: NodePort
