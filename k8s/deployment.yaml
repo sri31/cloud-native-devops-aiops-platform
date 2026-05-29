@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: cloud-native-devops-aiops-platform
-          image: srinidhi1989/cloud-native-devops-aiops-platform:678a13c  # IMAGE_TAG
+          image: srinidhi1989/cloud-native-devops-aiops-platform:384fb2f  # IMAGE_TAG
           ports:
             - containerPort: 8000
           resources:
