@@ -97,4 +97,4 @@ jobs:
           git config user.email "github-actions@github.com"
           git add k8s/deployment.yaml
           git commit -m "ci: update image tag to ${{ steps.sha.outputs.SHORT_SHA }}"
-          git push
+          git push https://sri31:${{ secrets.GH_TOKEN }}@github.com/sri31/cloud-native-devops-aiops-platform.gitS
