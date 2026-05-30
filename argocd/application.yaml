@@ -1,0 +1,37 @@
+# ──────────────────────────────────────────
+# ArgoCD Application Definition
+# Cloud Native DevOps AIOps Platform
+# Author: sri31
+# ──────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloud-native-devops-aiops-platform
+  namespace: argocd
+spec:
+  project: default
+
+  # ────────────────────────────────────────
+  # Source — GitHub repo to watch
+  # ────────────────────────────────────────
+  source:
+    repoURL: https://github.com/sri31/cloud-native-devops-aiops-platform
+    targetRevision: main
+    path: k8s
+
+  # ────────────────────────────────────────
+  # Destination — Where to deploy
+  # ────────────────────────────────────────
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: devops-aiops
+
+  # ────────────────────────────────────────
+  # Sync Policy — Auto sync
+  # ────────────────────────────────────────
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources removed from GitHub
+      selfHeal: true   # Fix manual changes to match GitHub
+    syncOptions:
+      - CreateNamespace=true

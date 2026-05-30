@@ -15,7 +15,7 @@ app = FastAPI(
     Part of a full DevOps + AIOps pipeline using Kubernetes, Terraform, Ansible, ArgoCD, Vault and Ollama.
     GitHub: https://github.com/sri31/cloud-native-devops-aiops-platform
     """,
-    version="1.0.0"
+    version="1.0.1"
 )
 
 # ──────────────────────────────────────────
@@ -55,7 +55,7 @@ APP_INFO = Gauge(
 )
 
 APP_INFO.labels(
-    version="1.0.0",
+    version="1.0.1",
     app_name="cloud-native-devops-aiops-platform",
     author="sri31"
 ).set(1)
@@ -90,7 +90,7 @@ async def root():
         "project": "Cloud Native DevOps AIOps Platform",
         "author": "sri31",
         "docker_hub": "https://hub.docker.com/r/srinidhi1989/cloud-native-devops-aiops-platform",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "description": "Production-grade System Health Dashboard with full DevOps + AIOps pipeline",
         "endpoints": {
             "health": "/health",
@@ -104,7 +104,7 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "app": "cloud-native-devops-aiops-platform"
     }
 
